@@ -16,7 +16,7 @@
     "displayName": "WhatsApp",
     "description": "Oculta y muestra WhatsApp Web; muestra cuántas conversaciones tienen mensajes sin leer.",
     "category": "Communication",
-    "defaultSection": "center",
+    "defaultSection": "right",
     "allowMultiple": false
   }
 }

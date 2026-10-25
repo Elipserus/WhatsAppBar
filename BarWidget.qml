@@ -60,6 +60,8 @@ BarWidget {
   }
 
   visible: running
+
+  readonly property real logoSize: Style.bar.iconFont * 0.9
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
 
@@ -139,15 +141,14 @@ BarWidget {
 
     iconComponent: Component {
       Item {
-        // WhatsApp logo from Simple Icons (CC0), on a 24x24 viewBox. The
-        // solid ring reads heavier than a glyph, so it's drawn a bit under
-        // the bar's icon font size.
+        // WhatsApp logo from Simple Icons (CC0), on a 24x24 viewBox, drawn
+        // at 90% of the bar's icon font size.
         Shape {
           id: logo
           anchors.centerIn: parent
           width: 24
           height: 24
-          scale: Style.bar.iconFont * 0.72 / 24
+          scale: root.logoSize / 24
           preferredRendererType: Shape.CurveRenderer
 
           ShapePath {
@@ -163,8 +164,8 @@ BarWidget {
         // corner, clear of the logo so it stays readable.
         Text {
           visible: root.unreadCount > 0
-          x: parent.width / 2 + Style.bar.iconFont * 0.72 / 2 + Style.space(1)
-          y: parent.height / 2 + Style.bar.iconFont * 0.72 / 2 - implicitHeight * 0.6
+          x: parent.width / 2 + root.logoSize / 2 + Style.space(1)
+          y: parent.height / 2 + root.logoSize / 2 - implicitHeight * 0.6
           text: root.unreadCount > 9 ? "9+" : String(root.unreadCount)
           color: button.foreground
           font.family: Style.font.family
