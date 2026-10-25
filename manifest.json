@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.elipserus.whatsapp",
+  "name": "WhatsApp",
+  "version": "1.0.0",
+  "author": "Elipserus",
+  "license": "MIT",
+  "description": "Oculta y muestra la ventana de WhatsApp Web con un clic y cuenta las conversaciones con mensajes sin leer.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "WhatsApp",
+    "description": "Oculta y muestra WhatsApp Web; muestra cuántas conversaciones tienen mensajes sin leer.",
+    "category": "Communication",
+    "defaultSection": "center",
+    "allowMultiple": false
+  }
+}
