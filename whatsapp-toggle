@@ -1,0 +1,79 @@
+#!/bin/bash
+# Hide or show the WhatsApp Web window, never its call windows.
+#
+#   whatsapp-toggle status   prints "<running> <hidden> <address>", e.g. "1 0 0x5640..."
+#                            running: 1 if the WhatsApp window is open, else 0
+#                            hidden:  1 if it is parked in the hidden workspace
+#                            address: the window's Hyprland address, or -
+#   whatsapp-toggle hide     move it to the hidden workspace
+#   whatsapp-toggle show     bring it back to the current workspace and focus it
+#   whatsapp-toggle toggle   flip between the two
+#   whatsapp-toggle watch    print "<key>\t<chat>" for every new WhatsApp
+#                            notification, as Omarchy's shell saves it
+
+HIDDEN="special:whatsapp"
+NOTIFICATIONS="$HOME/.local/state/omarchy/notifications"
+
+# WhatsApp Web runs as a browser web app (class like
+# brave-web.whatsapp.com__-Default). Calls open in their own window of the
+# same class titled "Llamada de WhatsApp", so anything titled like a call is
+# left alone.
+windows() {
+  hyprctl clients -j 2>/dev/null | jq -r --arg ws "$HIDDEN" '
+    .[] | select((.class | test("web\\.whatsapp\\.com")) and ((.title | test("llamada|call"; "i")) | not))
+        | "\(.address) \(.workspace.name == $ws)"'
+}
+
+move() {
+  hyprctl dispatch "hl.dsp.window.move({ workspace = \"$2\", follow = false, window = \"address:$1\" })" >/dev/null 2>&1 ||
+    hyprctl dispatch movetoworkspacesilent "$2,address:$1" >/dev/null
+}
+
+hide() {
+  local addr hidden
+  while read -r addr hidden; do
+    [[ $hidden == false ]] && move "$addr" "$HIDDEN"
+  done < <(windows)
+}
+
+show() {
+  local addr hidden last="" ws
+  ws=$(hyprctl activeworkspace -j | jq -r '.id')
+  while read -r addr hidden; do
+    [[ $hidden == true ]] && move "$addr" "$ws"
+    last=$addr
+  done < <(windows)
+  [[ -n $last ]] && hyprctl dispatch "hl.dsp.focus({ window = \"address:$last\" })" >/dev/null 2>&1
+}
+
+case "$1" in
+  status)
+    list=$(windows)
+    if [[ -z $list ]]; then echo "0 0 -"
+    elif grep -q ' true$' <<<"$list"; then echo "1 1 ${list%% *}"
+    else echo "1 0 ${list%% *}"
+    fi
+    ;;
+  hide) hide ;;
+  show) show ;;
+  toggle)
+    if [[ $("$0" status) == "1 1 "* ]]; then show; else hide; fi
+    ;;
+  watch)
+    # The shell writes each notification to its own file, first next to the
+    # toast and then into history/, so a file can show up twice; the key (the
+    # file name) lets the caller count it once. Chromium puts the site's
+    # address at the top of the body, which is how WhatsApp's are told apart.
+    mkdir -p "$NOTIFICATIONS/history"
+    inotifywait -m -q -e close_write,moved_to --format '%w%f' "$NOTIFICATIONS" "$NOTIFICATIONS/history" |
+      while read -r file; do
+        [[ $file == *.json ]] || continue
+        jq -r --arg key "$(basename "$file" .json)" \
+          'select((.body // "") | contains("web.whatsapp.com")) | "\($key)\t\(.summary)"' "$file" 2>/dev/null
+      done
+    ;;
+  *)
+    echo "Usage: whatsapp-toggle {status|hide|show|toggle|watch}" >&2
+    exit 1
+    ;;
+esac
