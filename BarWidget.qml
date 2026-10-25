@@ -147,7 +147,7 @@ BarWidget {
           anchors.centerIn: parent
           width: 24
           height: 24
-          scale: Style.bar.iconFont * 0.85 / 24
+          scale: Style.bar.iconFont * 0.72 / 24
           preferredRendererType: Shape.CurveRenderer
 
           ShapePath {
@@ -163,8 +163,8 @@ BarWidget {
         // corner, clear of the logo so it stays readable.
         Text {
           visible: root.unreadCount > 0
-          x: parent.width / 2 + Style.bar.iconFont * 0.85 / 2 + Style.space(1)
-          y: parent.height / 2 + Style.bar.iconFont * 0.85 / 2 - implicitHeight * 0.6
+          x: parent.width / 2 + Style.bar.iconFont * 0.72 / 2 + Style.space(1)
+          y: parent.height / 2 + Style.bar.iconFont * 0.72 / 2 - implicitHeight * 0.6
           text: root.unreadCount > 9 ? "9+" : String(root.unreadCount)
           color: button.foreground
           font.family: Style.font.family
